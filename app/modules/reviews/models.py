@@ -1,5 +1,7 @@
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
+from datetime import datetime
+
 
 from app.core.db_base import Base
 
@@ -15,6 +17,6 @@ class Review(Base):
 
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING")  # PENDING/APPROVED/REJECTED
 
-    created_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     moderated_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    moderated_at: Mapped["DateTime" | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    moderated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
