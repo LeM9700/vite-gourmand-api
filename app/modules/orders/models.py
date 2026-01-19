@@ -1,7 +1,7 @@
 from sqlalchemy import (
     Boolean, Date, DateTime, ForeignKey, Numeric, Integer, String, Text, Time, func
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db_base import Base
 
@@ -32,6 +32,10 @@ class Order(Base):
 
     created_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", lazy="joined")
+    menu: Mapped["Menu"] = relationship("Menu", lazy="joined")
 
 
 class OrderStatusHistory(Base):

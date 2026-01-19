@@ -16,3 +16,11 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    
+    @property
+    def full_name(self) -> str:
+        """Retourne le nom complet de l'utilisateur"""
+        return f"{self.firstname} {self.lastname}"
+
+
+    

@@ -24,16 +24,15 @@ class Menu(Base):
     updated_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     images = relationship(
-    "MenuImage",
-    primaryjoin="Menu.id==MenuImage.menu_id",
-    order_by="MenuImage.sort_order",
-    cascade="all, delete-orphan",
-    lazy="selectin"
-)
+        "MenuImage",
+        primaryjoin="Menu.id==MenuImage.menu_id",
+        order_by="MenuImage.sort_order",
+        cascade="all, delete-orphan",
+        lazy="selectin"
+    )
 
     dishes = relationship(
-    "Dish",
-    secondary="menu_dishes",
-    lazy="selectin"
-)
-
+        "Dish",
+        secondary="menu_dishes",
+        lazy="selectin"
+    )

@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import select, desc, asc
+from typing import List, Optional
 from sqlalchemy.exc import IntegrityError
 
 from app.modules.orders.models import Order
@@ -49,3 +50,56 @@ def moderate_review(db: Session, review_id: int, moderator_user_id: int, status:
     db.commit()
     db.refresh(review)
     return review
+
+
+
+def get_approved_reviews(
+    db: Session, 
+    limit: Optional[int] = None, 
+    sort_by: str = "date", 
+    order: str = "desc"
+) -> List[Review]:
+    """
+    Récupère les avis approuvés avec options de tri et limitation
+    
+    Args:
+        db: Session de base de données
+        limit: Nombre maximum d'avis à retourner (None = pas de limite)
+        sort_by: Critère de tri ("date" ou "rating")
+        order: Ordre de tri ("asc" ou "desc")
+    """
+    # Validation des paramètres
+    if sort_by not in ["date", "rating"]:
+        raise HTTPException(status_code=400, detail="sort_by doit être 'date' ou 'rating'")
+    
+    if order not in ["asc", "desc"]:
+        raise HTTPException(status_code=400, detail="order doit être 'asc' ou 'desc'")
+    
+    if limit is not None and limit <= 0:
+        raise HTTPException(status_code=400, detail="limit doit être supérieur à 0")
+    
+    # Construction de la requête avec eager loading
+    stmt = select(Review).options(
+        joinedload(Review.user),
+        joinedload(Review.order)
+    ).where(Review.status == "APPROVED")
+    
+    # Ajout du tri
+    if sort_by == "date":
+        if order == "desc":
+            stmt = stmt.order_by(desc(Review.created_at))
+        else:
+            stmt = stmt.order_by(asc(Review.created_at))
+    else:  # sort_by == "rating"
+        if order == "desc":
+            stmt = stmt.order_by(desc(Review.rating), desc(Review.created_at))  # Tri secondaire par date
+        else:
+            stmt = stmt.order_by(asc(Review.rating), desc(Review.created_at))   # Tri secondaire par date
+    
+    # Ajout de la limite
+    if limit is not None:
+        stmt = stmt.limit(limit)
+    
+    # Exécution de la requête
+    reviews = db.execute(stmt).scalars().unique().all()
+    return list(reviews)

@@ -1,14 +1,19 @@
-from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from enum import Enum
 from app.core.db_base import Base
 
+
+class DishType(str, Enum):
+    STARTER = "STARTER"
+    MAIN = "MAIN"  
+    DESSERT = "DESSERT"
 class Dish(Base):
     __tablename__ = "dishes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(150), nullable=False)
-    dish_type: Mapped[str] = mapped_column(String(20), nullable=False)  # STARTER/MAIN/DESSERT
+    dish_type: Mapped[DishType] = mapped_column(SQLEnum(DishType), nullable=False)  # STARTER/MAIN/DESSERT
     description: Mapped[str] = mapped_column(Text, nullable=False)
     allergens = relationship(
     "DishAllergen",

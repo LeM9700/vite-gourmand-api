@@ -37,6 +37,31 @@ class OrderOut(BaseModel):
     has_loaned_equipment: bool
 
 
+# Schémas pour les relations
+class UserInfoOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: int
+    firstname: str
+    lastname: str
+    email: str
+    phone: str
+    address: str
+
+class MenuInfoOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: int
+    title: str
+    base_price: Decimal
+    min_people: int
+
+# OrderOut enrichi avec customer et menu
+class OrderWithDetailsOut(OrderOut):
+    customer: UserInfoOut | None = None
+    menu: MenuInfoOut | None = None
+
+
 class OrderHistoryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     status: str
@@ -46,9 +71,11 @@ class OrderHistoryOut(BaseModel):
 
 class OrderDetailOut(OrderOut):
     history: list[OrderHistoryOut] = []
+    customer: UserInfoOut | None = None
+    menu: MenuInfoOut | None = None
 
 class OrderListOut(BaseModel):
-    items: list[OrderOut]
+    items: list[OrderWithDetailsOut]
     
 class OrderStatusPatchIn(BaseModel):
     status: str = Field(min_length=3, max_length=30)
@@ -58,3 +85,13 @@ class OrderCancelIn(BaseModel):
     contact_mode: str = Field(min_length=3, max_length=20)  # EMAIL/PHONE
     reason: str = Field(min_length=5)
     
+
+
+class OrderUpdateIn(BaseModel):
+    people_count: int | None = Field(default=None, gt=0)
+    event_address: str | None = None
+    event_city: str | None = None
+    event_date: date | None = None
+    event_time: time | None = None
+    delivery_km: int | None = Field(default=None, ge=0)
+    has_loaned_equipment: bool | None = None

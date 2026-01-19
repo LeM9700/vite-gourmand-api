@@ -1,17 +1,22 @@
 from datetime import date as date_type
 from decimal import Decimal, ROUND_HALF_UP
+import logging
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select,desc
 from sqlalchemy.exc import IntegrityError
 
 from app.modules.menus.models import Menu
 from app.modules.orders.models import Order, OrderStatusHistory, OrderCancellation
+from app.modules.users.models import User
+from app.core.email_service import email_service
 
 
 DELIVERY_BASE_FEE = Decimal("5.00")
 DELIVERY_PER_KM = Decimal("0.59")
+
+logger = logging.getLogger(__name__)
 
 
 def _money(x: Decimal) -> Decimal:
@@ -45,7 +50,11 @@ def create_order(db: Session, user_id: int, payload) -> Order:
     # 5) calcul prix (serveur)
     delivery_fee = _money(DELIVERY_BASE_FEE + (Decimal(payload.delivery_km) * DELIVERY_PER_KM))
     menu_price = _money(Decimal(menu.base_price))
+    
+    # Règle de réduction : -10% si nb_personnes >= min_people + 5
     discount = Decimal("0.00")
+    if payload.people_count >= menu.min_people + 5:
+        discount = _money(menu_price * payload.people_count * Decimal("0.10")) 
     total_price = _money(menu_price*payload.people_count + delivery_fee - discount)
 
     # 6) décrémenter stock
@@ -84,6 +93,98 @@ def create_order(db: Session, user_id: int, payload) -> Order:
     # 9) commit transaction
     db.commit()
     db.refresh(order)
+    
+    try:
+        user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+        if user:
+            email_service.send_order_confirmation_email(
+                user_email=user.email,
+                user_name=user.full_name,
+                order_id=order.id,
+                menu_title=menu.title,
+                event_date=order.event_date.strftime("%d/%m/%Y"),
+                event_time=order.event_time.strftime("%H:%M"),
+                people_count=order.people_count,
+                total_price=float(order.total_price),
+                delivery_city=order.event_city,
+            )
+            logger.info(f"✅ Email de confirmation envoyé pour la commande #{order.id}")
+    except Exception as e:
+        logger.error(f"❌ Erreur envoi email confirmation commande #{order.id}: {e}")
+    
+    
+    return order
+
+
+def update_order(db: Session, order_id: int, user_id: int, payload) -> Order:
+    # Récupérer la commande
+    stmt = select(Order).where(Order.id == order_id, Order.user_id == user_id)
+    order = db.execute(stmt).scalar_one_or_none()
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Commande non trouvée")
+    
+    if order.status != "PLACED":
+        raise HTTPException(
+            status_code=400, 
+            detail="Seules les commandes avec le statut PLACED peuvent être modifiées"
+        )
+    
+    
+    
+    # Récupérer le menu pour les règles métier
+    menu = db.execute(select(Menu).where(Menu.id == order.menu_id)).scalar_one_or_none()
+    if not menu:
+        raise HTTPException(status_code=404, detail="Menu non trouvé")
+    
+    # Vérifier le minimum de personnes
+    if payload.people_count < menu.min_people:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Minimum {menu.min_people} personnes pour ce menu"
+        )
+    
+    # Vérifier que la date est dans le futur
+    if payload.event_date <= date_type.today():
+        raise HTTPException(status_code=400, detail="La date de l'évènement doit être dans le futur")
+    
+    # Calculer le nouveau prix avec les mêmes règles que create_order
+    delivery_fee = _money(DELIVERY_BASE_FEE + (Decimal(payload.delivery_km) * DELIVERY_PER_KM))
+    menu_price = _money(Decimal(menu.base_price))
+    discount = Decimal("0.00")
+    
+    if payload.people_count >= menu.min_people + 5:
+        discount = _money(menu_price * payload.people_count * Decimal("0.10")) 
+    
+    total_price = _money(menu_price * payload.people_count + delivery_fee - discount)
+    
+    # Mettre à jour la commande avec les bons attributs
+    order.event_address = payload.event_address
+    order.event_city = payload.event_city
+    order.event_date = payload.event_date
+    order.event_time = payload.event_time
+    order.delivery_km = _money(Decimal(payload.delivery_km))
+    order.delivery_fee = delivery_fee
+    order.people_count = payload.people_count
+    order.menu_price = menu_price
+    order.discount = discount
+    order.total_price = total_price
+    order.has_loaned_equipment = payload.has_loaned_equipment
+    
+    db.add(order)
+    db.flush()
+    
+    # Ajouter un historique
+    history = OrderStatusHistory(
+        order_id=order.id,
+        status="PLACED",
+        changed_by_user_id=user_id,
+        note="Commande modifiée par le client"
+    )
+    db.add(history)
+    db.commit()
+    db.refresh(order)
+    
     return order
 
 def list_my_orders(db: Session, user_id: int) -> list[Order]:
@@ -94,12 +195,19 @@ def list_my_orders(db: Session, user_id: int) -> list[Order]:
     )
     return db.execute(stmt).scalars().all()
 
-def get_order_detail_for_user(db: Session, order_id: int, user_id: int):
-    order = db.execute(select(Order).where(Order.id == order_id)).scalar_one_or_none()
+def get_order_detail_for_user(db: Session, order_id: int, user_id: int, check_ownership: bool = True):
+    # Eager load des relations user et menu
+    stmt = select(Order).options(
+        joinedload(Order.user),
+        joinedload(Order.menu)
+    ).where(Order.id == order_id)
+    
+    order = db.execute(stmt).scalar_one_or_none()
     if order is None:
         raise HTTPException(status_code=404, detail="Commande introuvable")
 
-    if order.user_id != user_id:
+    # Vérifier la propriété uniquement si demandé (pour les users normaux)
+    if check_ownership and order.user_id != user_id:
         raise HTTPException(status_code=403, detail="Accès interdit")
 
     history = db.execute(
@@ -125,14 +233,25 @@ ALLOWED_TRANSITIONS = {
 def list_orders_admin(
     db: Session,
     status: str | None = None,
+    client_name: str | None = None,
     date_from: date_type | None = None,
     date_to: date_type | None = None,
     city: str | None = None,
 ):
-    stmt = select(Order)
+    # Eager load des relations user et menu
+    stmt = select(Order).options(
+        joinedload(Order.user),
+        joinedload(Order.menu)
+    )
 
     if status:
         stmt = stmt.where(Order.status == status)
+    
+    if client_name:
+        # Filtre insensible à la casse sur le nom complet de l'utilisateur
+        stmt = stmt.join(User, Order.user_id == User.id).where(
+            (User.firstname + ' ' + User.lastname).ilike(f"%{client_name}%")
+        )
 
     if city:
         stmt = stmt.where(Order.event_city == city)
@@ -144,7 +263,7 @@ def list_orders_admin(
         stmt = stmt.where(Order.event_date <= date_to)
 
     stmt = stmt.order_by(desc(Order.created_at))
-    return db.execute(stmt).scalars().all()
+    return db.execute(stmt).scalars().unique().all()
 
 
 def patch_order_status(
@@ -181,6 +300,37 @@ def patch_order_status(
 
     db.commit()
     db.refresh(order)
+    
+    # Envoi automatique email si passage à WAITING_RETURN
+    if new_status == "WAITING_RETURN" and order.has_loaned_equipment:
+        try:
+            email_service.send_equipment_return_reminder(
+                user_email=order.user.email,
+                user_name=order.user.full_name,
+                order_id=order.id,
+                event_date=order.event_date.strftime("%d/%m/%Y")
+            )
+        except Exception as e:
+            # Ne pas bloquer la transaction si l'email échoue
+            print(f"⚠️ Erreur envoi email rappel matériel: {e}")
+    
+    
+    #Email quand commande COMPLETED (pour demander avis)
+    if new_status == "COMPLETED":
+        try:
+            menu = db.execute(select(Menu).where(Menu.id == order.menu_id)).scalar_one_or_none()
+            if menu and order.user:
+                email_service.send_order_completed_email(
+                    user_email=order.user.email,
+                    user_name=order.user.full_name,
+                    order_id=order.id,
+                    menu_title=menu.title,
+                )
+                logger.info(f"✅ Email commande terminée envoyé pour #{order.id}")
+        except Exception as e:
+            logger.error(f"❌ Erreur envoi email completed commande #{order.id}: {e}")
+    
+    
     return order
 
 
