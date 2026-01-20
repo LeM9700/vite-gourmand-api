@@ -57,6 +57,7 @@ if settings.environment == "production":
     cors_origins = [
         "https://vite-et-gourmand.fr",
         "https://www.vite-et-gourmand.fr",
+        settings.frontend_url,
     ]
     allowed_credentials = True
     print("✅ CORS configured for production")
