@@ -6,6 +6,28 @@ from typing import List, Optional
 
 from app.modules.menus.models_dishes import DishType
 
+
+class MenuImageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    url: str
+    alt_text: str
+    sort_order: int
+    
+class DishAllergenOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    allergen: str
+    
+class DishOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    dish_type: DishType
+    description: str
+    allergens: list[DishAllergenOut] = []
+    
+        
 class MenuOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -29,17 +51,7 @@ class MenuListOut(BaseModel):
     items: list[MenuOut]
 
 
-class MenuImageOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: int
-    url: str
-    alt_text: str
-    sort_order: int
-    
-class DishAllergenOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: int
-    allergen: str
+
 
 
     
@@ -63,13 +75,7 @@ class DishAllergensReplaceIn(BaseModel):
     allergens: list[str]
         
 
-class DishOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: int
-    name: str
-    dish_type: DishType
-    description: str
-    allergens: list[DishAllergenOut] = []
+
 
 class MenuDetailOut(BaseModel):
     """Schéma complet pour le détail d'un menu avec images et plats"""
