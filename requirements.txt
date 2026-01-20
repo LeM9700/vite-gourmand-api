@@ -8,4 +8,6 @@ passlib[bcrypt]
 python-jose[cryptography]
 pymongo
 bcrypt
+pydantic[email]==2.5.0
+email-validator==2.1.0
 
