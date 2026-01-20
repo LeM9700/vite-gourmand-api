@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-import datetime
+from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
@@ -87,7 +87,7 @@ def root():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "environment": settings.environment, "version": settings.api_version, "timestamp": datetime.datetime.now().isoformat()}
+    return {"status": "ok", "environment": settings.environment, "version": settings.api_version, "timestamp": datetime.now().isoformat()}
 
 app.include_router(menus_router)
 app.include_router(auth_router)
