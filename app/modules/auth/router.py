@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
@@ -83,6 +83,7 @@ def register_user(user_data: UserRegisterIn, db: Session = Depends(get_db)):
 @router.post("/create-employee", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def create_employee(
     employee_data: EmployeeCreateIn, 
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_admin: User = Depends(require_admin)
 ):
@@ -116,20 +117,14 @@ def create_employee(
     db.commit()
     db.refresh(new_employee)
     
-    # 📧 Envoyer l'email de bienvenue (sans mot de passe)
-    try:
-        email_sent = email_service.send_employee_welcome_email(
-            email=new_employee.email,
-            firstname=new_employee.firstname,
-            lastname=new_employee.lastname
-        )
-        if email_sent:
-            logger.info(f"✅ Email de bienvenue envoyé à {new_employee.email}")
-        else:
-            logger.warning(f"⚠️ Échec envoi email de bienvenue à {new_employee.email}")
-    except Exception as e:
-        logger.error(f"❌ Erreur lors de l'envoi de l'email de bienvenue: {e}")
-        # On ne bloque pas la création du compte si l'email échoue
+    # 📧 Envoyer l'email de bienvenue en arrière-plan
+    background_tasks.add_task(
+        email_service.send_employee_welcome_email,
+        email=new_employee.email,
+        firstname=new_employee.firstname,
+        lastname=new_employee.lastname
+    )
+    logger.info(f"📧 Email de bienvenue programmé pour {new_employee.email}")
     
     return new_employee
 
@@ -167,6 +162,7 @@ def update_me(
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
 def forgot_password(
     payload: ForgotPasswordIn,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     """Demande de réinitialisation de mot de passe"""

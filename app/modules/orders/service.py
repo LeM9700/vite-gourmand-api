@@ -23,7 +23,7 @@ def _money(x: Decimal) -> Decimal:
     return x.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-def create_order(db: Session, user_id: int, payload) -> Order:
+def create_order(db: Session, user_id: int, payload, background_tasks=None) -> Order:
     # 1) menu existe + actif
     menu = db.execute(select(Menu).where(Menu.id == payload.menu_id)).scalar_one_or_none()
     if menu is None:
@@ -94,10 +94,12 @@ def create_order(db: Session, user_id: int, payload) -> Order:
     db.commit()
     db.refresh(order)
     
-    try:
+    # Envoi email de confirmation en arrière-plan
+    if background_tasks:
         user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
         if user:
-            email_service.send_order_confirmation_email(
+            background_tasks.add_task(
+                email_service.send_order_confirmation_email,
                 user_email=user.email,
                 user_name=user.full_name,
                 order_id=order.id,
@@ -108,10 +110,7 @@ def create_order(db: Session, user_id: int, payload) -> Order:
                 total_price=float(order.total_price),
                 delivery_city=order.event_city,
             )
-            logger.info(f"✅ Email de confirmation envoyé pour la commande #{order.id}")
-    except Exception as e:
-        logger.error(f"❌ Erreur envoi email confirmation commande #{order.id}: {e}")
-    
+            logger.info(f"📧 Email de confirmation programmé pour la commande #{order.id}")
     
     return order
 
@@ -272,6 +271,7 @@ def patch_order_status(
     new_status: str,
     changed_by_user_id: int,
     note: str | None,
+    background_tasks=None,
 ):
     order = db.execute(select(Order).where(Order.id == order_id)).scalar_one_or_none()
     if order is None:
@@ -301,34 +301,30 @@ def patch_order_status(
     db.commit()
     db.refresh(order)
     
-    # Envoi automatique email si passage à WAITING_RETURN
-    if new_status == "WAITING_RETURN" and order.has_loaned_equipment:
-        try:
-            email_service.send_equipment_return_reminder(
+    # Envoi automatique email si passage à WAITING_RETURN (en arrière-plan)
+    if new_status == "WAITING_RETURN" and order.has_loaned_equipment and background_tasks:
+        background_tasks.add_task(
+            email_service.send_equipment_return_reminder,
+            user_email=order.user.email,
+            user_name=order.user.full_name,
+            order_id=order.id,
+            event_date=order.event_date.strftime("%d/%m/%Y")
+        )
+        logger.info(f"📧 Email rappel matériel programmé pour commande #{order.id}")
+    
+    
+    # Email quand commande COMPLETED (pour demander avis) - en arrière-plan
+    if new_status == "COMPLETED" and background_tasks:
+        menu = db.execute(select(Menu).where(Menu.id == order.menu_id)).scalar_one_or_none()
+        if menu and order.user:
+            background_tasks.add_task(
+                email_service.send_order_completed_email,
                 user_email=order.user.email,
                 user_name=order.user.full_name,
                 order_id=order.id,
-                event_date=order.event_date.strftime("%d/%m/%Y")
+                menu_title=menu.title,
             )
-        except Exception as e:
-            # Ne pas bloquer la transaction si l'email échoue
-            print(f"⚠️ Erreur envoi email rappel matériel: {e}")
-    
-    
-    #Email quand commande COMPLETED (pour demander avis)
-    if new_status == "COMPLETED":
-        try:
-            menu = db.execute(select(Menu).where(Menu.id == order.menu_id)).scalar_one_or_none()
-            if menu and order.user:
-                email_service.send_order_completed_email(
-                    user_email=order.user.email,
-                    user_name=order.user.full_name,
-                    order_id=order.id,
-                    menu_title=menu.title,
-                )
-                logger.info(f"✅ Email commande terminée envoyé pour #{order.id}")
-        except Exception as e:
-            logger.error(f"❌ Erreur envoi email completed commande #{order.id}: {e}")
+            logger.info(f"📧 Email commande terminée programmé pour #{order.id}")
     
     
     return order

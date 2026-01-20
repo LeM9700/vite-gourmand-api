@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from datetime import date
 
@@ -16,10 +16,11 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 @router.post("", response_model=OrderOut, status_code=201)
 def place_order(
     payload: OrderCreateIn,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user = Depends(require_user),
 ):
-    order = create_order(db=db, user_id=current_user.id, payload=payload)
+    order = create_order(db=db, user_id=current_user.id, payload=payload, background_tasks=background_tasks)
     return order
 
 @router.put("/{order_id}", response_model=OrderOut)
@@ -99,6 +100,7 @@ def list_orders(
 def update_order_status(
     order_id: int,
     payload: OrderStatusPatchIn,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user = Depends(require_employee_or_admin),
 ):
@@ -108,6 +110,7 @@ def update_order_status(
         new_status=payload.status,
         changed_by_user_id=current_user.id,
         note=payload.note,
+        background_tasks=background_tasks
     )
     return order
 
