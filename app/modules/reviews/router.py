@@ -48,8 +48,8 @@ def moderate_review_endpoint(
 def get_approved_reviews_endpoint(
     db: Session = Depends(get_db),
     limit: Optional[int] = Query(None, ge=1, description="Nombre maximum d'avis à retourner"),
-    sort_by: str = Query("date", regex="^(date|rating)$", description="Critère de tri: 'date' ou 'rating'"),
-    order: str = Query("desc", regex="^(asc|desc)$", description="Ordre de tri: 'asc' ou 'desc'")
+    sort_by: str = Query("date", pattern="^(date|rating)$", description="Critère de tri: 'date' ou 'rating'"),
+    order: str = Query("desc", pattern="^(asc|desc)$", description="Ordre de tri: 'asc' ou 'desc'")
 ):
     """
     Récupère les avis approuvés avec options de tri et limitation.
@@ -84,8 +84,8 @@ def get_all_reviews_for_moderation(
     db: Session = Depends(get_db),
     _user = Depends(require_employee_or_admin),
     limit: Optional[int] = Query(None, ge=1, description="Nombre maximum d'avis à retourner"),
-    sort_by: str = Query("date", regex="^(date|rating)$", description="Critère de tri: 'date' ou 'rating'"),
-    order: str = Query("desc", regex="^(asc|desc)$", description="Ordre de tri: 'asc' ou 'desc'")
+    sort_by: str = Query("date", pattern="^(date|rating)$", description="Critère de tri: 'date' ou 'rating'"),
+    order: str = Query("desc", pattern="^(asc|desc)$", description="Ordre de tri: 'asc' ou 'desc'")
 ):
     """
     Récupère TOUS les avis (incluant pending/rejected) pour la modération.
