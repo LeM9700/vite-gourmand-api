@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from datetime import datetime
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+import logging
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.middleware import SecurityMiddleware
@@ -24,7 +25,7 @@ from app.modules.users.models import User  # ✅ Ajoutez cette ligne
 from app.core.db_base import Base
 from app.core.db_postgres import engine
 
-
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -55,27 +56,36 @@ app.add_middleware(SecurityMiddleware)
 #CORS sécurisé
 if settings.environment == "production":
     cors_origins = [
-        "https://vitegourmand.netlify.app/",
-        settings.frontend_url,
+        "https://vitegourmand.netlify.app",
+        "https://www.vitegourmand.netlify.app",
+        settings.frontend_url.rstrip('/') if settings.frontend_url else "",
     ]
-    allowed_credentials = True
-    print("✅ CORS configured for production")
+    # Filtrer les valeurs vides
+    cors_origins = [origin for origin in cors_origins if origin]
+    logger.info(f"✅ CORS configured for production: {cors_origins}")
 else : 
     cors_origins = ["*"]
-    allowed_credentials = False
-    print("🚨 CORS enabled for development")
-    
-  
+    logger.info("🚨 CORS enabled for development (allow all)")
 
+# Middleware custom pour logger les requêtes CORS
+@app.middleware("http")
+async def log_cors_requests(request: Request, call_next):
+    origin = request.headers.get("origin")
+    if origin:
+        logger.info(f"🌐 Request from origin: {origin}")
+        if origin not in cors_origins and "*" not in cors_origins:
+            logger.warning(f"⚠️ CORS rejected origin: {origin} - Allowed: {cors_origins}")
     
+    response = await call_next(request)
+    return response
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins if settings.environment == "production" else cors_origins, 
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE","OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["*"],
-    
 )        
 
 # Handler d'exeptions global
