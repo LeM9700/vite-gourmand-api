@@ -55,8 +55,7 @@ app.add_middleware(SecurityMiddleware)
 #CORS sécurisé
 if settings.environment == "production":
     cors_origins = [
-        "https://vite-et-gourmand.fr",
-        "https://www.vite-et-gourmand.fr",
+        "https://vitegourmand.netlify.app/",
         settings.frontend_url,
     ]
     allowed_credentials = True
