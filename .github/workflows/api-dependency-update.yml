@@ -1,0 +1,61 @@
+name: API Dependency Update
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Lundi 9h
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: 📦 Update Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📦 Install pip-tools
+        run: pip install pip-tools
+
+      - name: 🔄 Update dependencies
+        run: |
+          # ✅ Si vous avez requirements.in
+          if [ -f "requirements.in" ]; then
+            pip-compile requirements.in --upgrade
+          else
+            # Sinon, mettre à jour requirements.txt
+            pip list --outdated --format=json | jq -r '.[] | .name' > outdated.txt
+            pip install --upgrade -r outdated.txt
+            pip freeze > requirements.txt
+          fi
+
+      - name: 🧪 Test with new dependencies
+        run: |
+          pip install -r requirements.txt
+          pytest -v || echo "Tests failed, PR will need manual review"
+
+      - name: 📝 Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: '📦 chore: update Python dependencies'
+          title: '📦 Weekly dependency update'
+          body: |
+            🤖 Automated dependency update
+            
+            **Changes:**
+            - Updated Python packages to latest versions
+            
+            **Action required:**
+            - ✅ Review the changes
+            - ✅ Verify tests pass
+            - ✅ Merge if everything is OK
+          branch: chore/dependency-update
+          delete-branch: true

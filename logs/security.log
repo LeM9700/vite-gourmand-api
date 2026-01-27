@@ -1,0 +1,151 @@
+2026-01-08 10:31:31,899 - security - INFO - AUTH_FAILED - Email: user@exemple.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-08 10:31:54,363 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-08 12:52:00,946 - security - INFO - AUTH_FAILED - Email: user@exemple.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-08 12:52:48,913 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-08 15:08:05,396 - security - INFO - AUTH_FAILED - Email: user@exemple.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-08 15:09:32,040 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-08 15:30:43,479 - security - INFO - AUTH_SUCCESS - Email: alice.user@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-08 15:41:18,506 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-08 16:00:01,861 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-08 16:17:11,187 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-09 16:21:43,116 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-12 14:35:34,661 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-12 14:54:31,834 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-12 16:44:59,204 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-13 16:54:40,423 - security - INFO - AUTH_FAILED - Email: emma.employee@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-13 16:57:04,280 - security - INFO - AUTH_SUCCESS - Email: emma.employee@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-13 17:10:27,405 - security - INFO - AUTH_SUCCESS - Email: user@example.com - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-13 17:12:12,269 - security - INFO - AUTH_SUCCESS - Email: emma.employee@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-14 08:59:47,817 - security - INFO - AUTH_SUCCESS - Email: emma.employee@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-14 09:24:47,595 - security - INFO - AUTH_SUCCESS - Email: emma.employee@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-14 09:58:57,334 - security - INFO - AUTH_SUCCESS - Email: emma.employee@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-14 13:07:41,048 - security - INFO - AUTH_SUCCESS - Email: emma.employee@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-14 14:12:15,925 - security - INFO - AUTH_SUCCESS - Email: emma.employee@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-14 14:20:12,320 - security - INFO - AUTH_SUCCESS - Email: emma.employee@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-14 17:24:00,100 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-15 09:53:34,414 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-15 09:59:46,765 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-15 10:00:20,661 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-15 10:33:44,140 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-15 11:11:22,224 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: python-requests/2.32.4
+2026-01-15 13:22:29,533 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-15 14:07:46,849 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-15 14:18:59,090 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-15 16:22:36,644 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+2026-01-15 17:16:58,563 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-19 14:09:14,519 - security - INFO - AUTH_SUCCESS - Email: jose.admin@vitegourmand.test - IP: 127.0.0.1 - UserAgent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36
+2026-01-27 09:45:52,609 - security - INFO - AUTH_SUCCESS - Email: testuser@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 09:45:58,584 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 10:06:48,095 - security - INFO - AUTH_SUCCESS - Email: testuser_2f01ec25@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 10:06:49,197 - security - INFO - AUTH_FAILED - Email: testuser_4a3bbc4b@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 10:06:52,562 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:16:12,159 - security - INFO - AUTH_SUCCESS - Email: testuser_7a820b7a@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:16:14,056 - security - INFO - AUTH_FAILED - Email: testuser_0dbc687e@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:16:17,803 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:16:20,041 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:16:22,181 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:16:24,057 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:16:26,045 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:16:29,146 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:35:19,531 - security - INFO - AUTH_SUCCESS - Email: testuser_49fe9935@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:35:20,758 - security - INFO - AUTH_FAILED - Email: testuser_977a322a@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:35:24,556 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:35:26,402 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:35:28,824 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:35:30,873 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:35:32,775 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:35:34,268 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:36:29,764 - security - INFO - AUTH_SUCCESS - Email: testuser_e0e2d23f@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:36:31,002 - security - INFO - AUTH_FAILED - Email: testuser_e1dc8df1@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:36:34,979 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:36:36,811 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:36:38,764 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:36:40,675 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:36:42,554 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:36:43,887 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:02,627 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:04,559 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:06,157 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:07,414 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:09,271 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:11,154 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:12,400 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:13,607 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:14,817 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:16,010 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:17,253 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:19,901 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:21,129 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:22,977 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:25,230 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:27,527 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:28,983 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:32,932 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:34,778 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:36,330 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:37,850 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:39:39,082 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:40:49,961 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:40:52,319 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:40:54,268 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:40:55,797 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:40:57,033 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:40:58,379 - security - INFO - AUTH_SUCCESS - Email: testuser_10cd5641@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:40:59,661 - security - INFO - AUTH_FAILED - Email: testuser_8ff17aa3@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:03,571 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:04,801 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:06,835 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:10,953 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:13,030 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:14,292 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:15,531 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:16,754 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:19,299 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:20,600 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:22,736 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:24,022 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:25,317 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:26,607 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:28,877 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:31,376 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:33,287 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:35,367 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:36,845 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:40,082 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:42,509 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:43,865 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:45,102 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:46,569 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:41:48,023 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:27,771 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:30,435 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:31,967 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:33,557 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:34,791 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:36,157 - security - INFO - AUTH_SUCCESS - Email: testuser_4f8b480c@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:37,386 - security - INFO - AUTH_FAILED - Email: testuser_8f243534@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:41,127 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:42,361 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:44,198 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:48,019 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:50,067 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:51,335 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:52,558 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:53,768 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:56,254 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:57,500 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:45:59,368 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:00,620 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:02,011 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:03,277 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:05,201 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:07,191 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:09,034 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:10,910 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:12,284 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:14,747 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:16,580 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:17,826 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:19,046 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:20,859 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-01-27 11:46:22,076 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient

@@ -1,0 +1,70 @@
+name: API Scheduled Tests
+
+on:
+  schedule:
+    # Tous les jours à 2h du matin
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.12'
+  WORKING_DIRECTORY: vite-gourmand-api
+
+jobs:
+  full-test-suite:
+    name: 🧪 Full Test Suite
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_vg_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      mongodb:
+        image: mongo:7
+        env:
+          MONGO_INITDB_ROOT_USERNAME: test_user
+          MONGO_INITDB_ROOT_PASSWORD: test_password
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov pytest-asyncio pytest-xdist
+
+      - name: 🧪 Run all tests (parallel)
+        env:
+          ENVIRONMENT: testing
+          POSTGRES_URL: postgresql://test_user:test_password@localhost:5432/test_vg_db
+          MONGO_URL: mongodb://test_user:test_password@localhost:27017
+          MONGO_DB: test_vg_db
+        run: |
+          pytest -v -n auto --cov=app --cov-report=xml --cov-report=term
+
+      - name: 📊 Generate coverage badge
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          coverage-badge-filename: coverage.svg
+          badges-directory: badges
+          generate-coverage-badge: true
