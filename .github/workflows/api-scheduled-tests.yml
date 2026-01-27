@@ -59,6 +59,18 @@ jobs:
           POSTGRES_URL: postgresql://test_user:test_password@localhost:5432/test_vg_db
           MONGO_URL: mongodb://test_user:test_password@localhost:27017
           MONGO_DB: test_vg_db
+          JWT_SECRET: test-secret-key
+          JWT_ALG: HS256
+          JWT_EXPIRE_MINUTES: 30
+          SMTP_SERVER: smtp.gmail.com
+          SMTP_PORT: 587
+          SMTP_USERNAME: test@example.com
+          SMTP_PASSWORD: test-password
+          SMTP_USE_TLS: true
+          SMTP_FROM: noreply@test.com
+          EMAIL_CONFIRMATION_EXPIRE_HOURS: 24
+          EMAIL_CONFIRMATION_SECRET: test-email-secret
+          FRONTEND_URL: http://localhost:3000
         run: |
           pytest -v -n auto --cov=app --cov-report=xml --cov-report=term
 

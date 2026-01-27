@@ -4,16 +4,13 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'vite-gourmand-api/**'
+      - '**'
       - '.github/workflows/api-ci-cd.yml'
   pull_request:
     branches: [ main, develop ]
-    paths:
-      - 'vite-gourmand-api/**'
 
 env:
   PYTHON_VERSION: '3.12'
-  WORKING_DIRECTORY: vite-gourmand-api
 
 jobs:
   test:
@@ -38,24 +35,44 @@ jobs:
           pip install pytest-cov pytest-asyncio
 
       - name: 🧹 Lint with Ruff
-        continue-on-error: true  # ✅ Ne pas bloquer si warnings
+        continue-on-error: true
         run: |
           pip install ruff
           ruff check . --output-format=github
 
       - name: 🔍 Type checking with mypy
-        continue-on-error: true  # ✅ Ne pas bloquer si warnings
+        continue-on-error: true
         run: |
           pip install mypy
           mypy app --ignore-missing-imports
 
       - name: 🧪 Run tests with coverage
         env:
+          # ✅ Variables de base
           ENVIRONMENT: testing
-          JWT_SECRET: test-secret-key-for-ci-cd
           POSTGRES_URL: sqlite:///./test.db
           MONGO_URL: mongodb://localhost:27017
           MONGO_DB: test_vg_db
+          
+          # ✅ JWT
+          JWT_SECRET: test-secret-key-for-ci-cd-only-do-not-use-in-production
+          JWT_ALG: HS256
+          JWT_EXPIRE_MINUTES: 30
+          
+          # ✅ SMTP (valeurs de test)
+          SMTP_SERVER: smtp.gmail.com
+          SMTP_PORT: 587
+          SMTP_USERNAME: test@example.com
+          SMTP_PASSWORD: test-password
+          SMTP_USE_TLS: true
+          SMTP_FROM: noreply@test.com
+          
+          # ✅ Email confirmation
+          EMAIL_CONFIRMATION_EXPIRE_HOURS: 24
+          EMAIL_CONFIRMATION_SECRET: test-email-secret-key
+          
+          # ✅ Frontend URL
+          FRONTEND_URL: http://localhost:3000
         run: |
           pytest -v --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing
 
@@ -63,7 +80,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path:  coverage.xml
+          path: |
+            coverage.xml
             htmlcov/
 
   security:
@@ -93,7 +111,6 @@ jobs:
     name: 🚂 Deploy to Railway
     runs-on: ubuntu-latest
     needs: [test, security]
-    # ✅ Déployer seulement sur push vers main (pas sur PR)
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
@@ -117,9 +134,7 @@ jobs:
           echo "⏳ Waiting for deployment..."
           sleep 30
           
-          # Récupérer l'URL depuis Railway
           RAILWAY_URL="${{ secrets.RAILWAY_DOMAIN }}"
-          
           echo "🔍 Checking health at: $RAILWAY_URL/health"
           
           MAX_RETRIES=5
