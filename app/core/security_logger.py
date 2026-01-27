@@ -1,9 +1,7 @@
 import logging
-import os
-from datetime import datetime
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
-from fastapi import Request
+
 
 # ✅ Créer le dossier logs s'il n'existe pas
 logs_dir = Path("logs")

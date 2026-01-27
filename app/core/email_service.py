@@ -3,7 +3,6 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from typing import Optional
 import logging
 from jose import jwt, JWTError
 
