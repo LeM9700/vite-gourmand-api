@@ -136,39 +136,43 @@ def update_order(db: Session, order_id: int, user_id: int, payload) -> Order:
     if not menu:
         raise HTTPException(status_code=404, detail="Menu non trouvé")
     
+    # Utiliser les valeurs actuelles si les champs optionnels ne sont pas fournis
+    delivery_km = payload.delivery_km if payload.delivery_km is not None else order.delivery_km
+    people_count = payload.people_count if payload.people_count is not None else order.people_count
+    
     # Vérifier le minimum de personnes
-    if payload.people_count < menu.min_people:
+    if people_count < menu.min_people:
         raise HTTPException(
             status_code=400,
             detail=f"Minimum {menu.min_people} personnes pour ce menu"
         )
     
-    # Vérifier que la date est dans le futur
-    if payload.event_date <= date_type.today():
+    # Vérifier que la date est dans le futur (seulement si fournie)
+    if payload.event_date and payload.event_date <= date_type.today():
         raise HTTPException(status_code=400, detail="La date de l'évènement doit être dans le futur")
     
     # Calculer le nouveau prix avec les mêmes règles que create_order
-    delivery_fee = _money(DELIVERY_BASE_FEE + (Decimal(payload.delivery_km) * DELIVERY_PER_KM))
+    delivery_fee = _money(DELIVERY_BASE_FEE + (Decimal(delivery_km) * DELIVERY_PER_KM))
     menu_price = _money(Decimal(menu.base_price))
     discount = Decimal("0.00")
     
-    if payload.people_count >= menu.min_people + 5:
-        discount = _money(menu_price * payload.people_count * Decimal("0.10")) 
+    if people_count >= menu.min_people + 5:
+        discount = _money(menu_price * people_count * Decimal("0.10")) 
     
-    total_price = _money(menu_price * payload.people_count + delivery_fee - discount)
+    total_price = _money(menu_price * people_count + delivery_fee - discount)
     
     # Mettre à jour la commande avec les bons attributs
-    order.event_address = payload.event_address
-    order.event_city = payload.event_city
-    order.event_date = payload.event_date
-    order.event_time = payload.event_time
-    order.delivery_km = _money(Decimal(payload.delivery_km))
+    order.event_address = payload.event_address if payload.event_address is not None else order.event_address
+    order.event_city = payload.event_city if payload.event_city is not None else order.event_city
+    order.event_date = payload.event_date if payload.event_date is not None else order.event_date
+    order.event_time = payload.event_time if payload.event_time is not None else order.event_time
+    order.delivery_km = _money(Decimal(delivery_km))
     order.delivery_fee = delivery_fee
-    order.people_count = payload.people_count
+    order.people_count = people_count
     order.menu_price = menu_price
     order.discount = discount
     order.total_price = total_price
-    order.has_loaned_equipment = payload.has_loaned_equipment
+    order.has_loaned_equipment = payload.has_loaned_equipment if payload.has_loaned_equipment is not None else order.has_loaned_equipment
     
     db.add(order)
     db.flush()

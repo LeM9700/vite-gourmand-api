@@ -274,7 +274,7 @@ L'équipe Vite & Gourmand
 </html>
         """.strip()
         
-        return self.send_email(user_email, subject, html_content)
+        return self._send_email(user_email, subject, html_content)
 
     def send_employee_welcome_email(self, email: str, firstname: str, lastname: str) -> bool:
         """

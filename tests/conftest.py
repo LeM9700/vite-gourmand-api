@@ -140,3 +140,79 @@ def admin_token(client, admin_user):
 def auth_headers(admin_token):
     """Get authorization headers"""
     return {"Authorization": f"Bearer {admin_token}"}
+
+@pytest.fixture(scope="function")
+def employee_user(db_session):
+    """Create employee user for the current test"""
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    employee = User(
+        email="employee@test.com",
+        password_hash=pwd_context.hash("TestPass123!"),
+        firstname="Employee",
+        lastname="Test",
+        phone="0601020305",
+        address="456 Test St",
+        role="EMPLOYEE",
+        is_active=True
+    )
+    db_session.add(employee)
+    db_session.commit()
+    db_session.refresh(employee)
+    
+    return employee
+
+@pytest.fixture
+def employee_token(client, employee_user):
+    """Get employee JWT token for authenticated requests"""
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": employee_user.email,
+            "password": "TestPass123!"
+        }
+    )
+    
+    if response.status_code != 200:
+        print(f"Employee login failed: {response.json()}")
+        pytest.fail(f"Employee login failed: {response.json()}")
+    
+    return response.json()["access_token"]
+
+@pytest.fixture(scope="function")
+def regular_user(db_session):
+    """Create regular user for the current test"""
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    user = User(
+        email="user@test.com",
+        password_hash=pwd_context.hash("TestPass123!"),
+        firstname="Regular",
+        lastname="User",
+        phone="0601020306",
+        address="789 Test St",
+        role="USER",
+        is_active=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    
+    return user
+
+@pytest.fixture
+def user_token(client, regular_user):
+    """Get regular user JWT token for authenticated requests"""
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": regular_user.email,
+            "password": "TestPass123!"
+        }
+    )
+    
+    if response.status_code != 200:
+        print(f"User login failed: {response.json()}")
+        pytest.fail(f"User login failed: {response.json()}")
+    
+    return response.json()["access_token"]
