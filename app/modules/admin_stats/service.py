@@ -85,65 +85,75 @@ def get_orders_by_menu_stats(
     Agrège les statistiques de commandes par menu sur une période.
     Permet de comparer les performances de chaque menu.
     """
-    coll = mongo_db["menu_stats_daily"]
-    
-    # Filtres de base
-    match_filter = {
-        "day": {
-            "$gte": start_date.isoformat(),
-            "$lte": end_date.isoformat()
+    try:
+        coll = mongo_db["menu_stats_daily"]
+        
+        # Filtres de base
+        match_filter = {
+            "day": {
+                "$gte": start_date.isoformat(),
+                "$lte": end_date.isoformat()
+            }
         }
-    }
-    
-    # Filtre optionnel par menu
-    if menu_id is not None:
-        match_filter["menu_id"] = menu_id
-    
-    # Pipeline d'agrégation MongoDB
-    pipeline = [
-        {"$match": match_filter},
-        {
-            "$group": {
-                "_id": "$menu_id",
-                "orders_count": {"$sum": "$orders_count"},
-                "total_revenue": {"$sum": "$revenue_total"},
-                "first_order_date": {"$min": "$day"},
-                "last_order_date": {"$max": "$day"}
-            }
-        },
-        {
-            "$project": {
-                "menu_id": "$_id",
-                "orders_count": 1,
-                "total_revenue": 1,
-                "avg_order_value": {
-                    "$cond": [
-                        {"$eq": ["$orders_count", 0]},
-                        0,
-                        {"$divide": ["$total_revenue", "$orders_count"]}
-                    ]
-                },
-                "first_order_date": 1,
-                "last_order_date": 1,
-                "_id": 0
-            }
-        },
-        {"$sort": {"total_revenue": -1}}  # Tri par CA décroissant
-    ]
-    
-    results = list(coll.aggregate(pipeline))
-    
-    # Calculs globaux
-    total_orders = sum(r["orders_count"] for r in results)
-    total_revenue = sum(r["total_revenue"] for r in results)
-    
-    return {
-        "start_date": start_date.isoformat(),
-        "end_date": end_date.isoformat(),
-        "total_orders": total_orders,
-        "total_revenue": round(total_revenue, 2),
-        "menus": results
-    }
+        
+        # Filtre optionnel par menu
+        if menu_id is not None:
+            match_filter["menu_id"] = menu_id
+        
+        # Pipeline d'agrégation MongoDB
+        pipeline = [
+            {"$match": match_filter},
+            {
+                "$group": {
+                    "_id": "$menu_id",
+                    "orders_count": {"$sum": "$orders_count"},
+                    "total_revenue": {"$sum": "$revenue_total"},
+                    "first_order_date": {"$min": "$day"},
+                    "last_order_date": {"$max": "$day"}
+                }
+            },
+            {
+                "$project": {
+                    "menu_id": "$_id",
+                    "orders_count": 1,
+                    "total_revenue": 1,
+                    "avg_order_value": {
+                        "$cond": [
+                            {"$eq": ["$orders_count", 0]},
+                            0,
+                            {"$divide": ["$total_revenue", "$orders_count"]}
+                        ]
+                    },
+                    "first_order_date": 1,
+                    "last_order_date": 1,
+                    "_id": 0
+                }
+            },
+            {"$sort": {"total_revenue": -1}}  # Tri par CA décroissant
+        ]
+        
+        results = list(coll.aggregate(pipeline))
+        
+        # Calculs globaux
+        total_orders = sum(r["orders_count"] for r in results)
+        total_revenue = sum(r["total_revenue"] for r in results)
+        
+        return {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "total_orders": total_orders,
+            "total_revenue": round(total_revenue, 2),
+            "menus": results
+        }
+    except Exception as e:
+        logger.error(f"❌ Erreur MongoDB dans get_orders_by_menu_stats: {e}", exc_info=True)
+        return {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "total_orders": 0,
+            "total_revenue": 0.0,
+            "menus": []
+        }
 
 
 def get_revenue_by_menu_stats(
