@@ -4,11 +4,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, func, cast, Date as SqlDate
 from typing import Optional, List, Dict
 from collections import defaultdict
+import logging
 
 from app.modules.orders.models import Order
 from app.modules.reviews.models import Review
 from app.modules.users.models import User
 from app.modules.contact.models import ContactMessage
+
+logger = logging.getLogger(__name__)
 
 
 def recompute_menu_daily_stats(db: Session, mongo_db, day: date):
@@ -153,87 +156,98 @@ def get_revenue_by_menu_stats(
     Calcul détaillé du chiffre d'affaires par menu avec statistiques avancées.
     Permet de filtrer sur plusieurs menus spécifiques.
     """
-    coll = mongo_db["menu_stats_daily"]
-    
-    # Filtres
-    match_filter = {
-        "day": {
-            "$gte": start_date.isoformat(),
-            "$lte": end_date.isoformat()
+    try:
+        coll = mongo_db["menu_stats_daily"]
+        
+        # Filtres
+        match_filter = {
+            "day": {
+                "$gte": start_date.isoformat(),
+                "$lte": end_date.isoformat()
+            }
         }
-    }
-    
-    if menu_ids:
-        match_filter["menu_id"] = {"$in": menu_ids}
-    
-    # Agrégation par menu
-    pipeline = [
-        {"$match": match_filter},
-        {
-            "$group": {
-                "_id": "$menu_id",
-                "period_revenue": {"$sum": "$revenue_total"},
-                "orders_count": {"$sum": "$orders_count"},
-                "days": {
-                    "$push": {
-                        "day": "$day",
-                        "revenue": "$revenue_total"
+        
+        if menu_ids:
+            match_filter["menu_id"] = {"$in": menu_ids}
+        
+        # Agrégation par menu
+        pipeline = [
+            {"$match": match_filter},
+            {
+                "$group": {
+                    "_id": "$menu_id",
+                    "period_revenue": {"$sum": "$revenue_total"},
+                    "orders_count": {"$sum": "$orders_count"},
+                    "days": {
+                        "$push": {
+                            "day": "$day",
+                            "revenue": "$revenue_total"
+                        }
                     }
                 }
-            }
-        },
-        {
-            "$project": {
-                "menu_id": "$_id",
-                "period_revenue": 1,
-                "orders_count": 1,
-                "avg_order_value": {
-                    "$cond": [
-                        {"$eq": ["$orders_count", 0]},
-                        0,
-                        {"$divide": ["$period_revenue", "$orders_count"]}
-                    ]
-                },
-                "best_day": {
-                    "$arrayElemAt": [
-                        {
-                            "$sortArray": {
-                                "input": "$days",
-                                "sortBy": {"revenue": -1}
-                            }
-                        },
-                        0
-                    ]
-                },
-                "_id": 0
-            }
-        },
-        {
-            "$project": {
-                "menu_id": 1,
-                "period_revenue": 1,
-                "orders_count": 1,
-                "avg_order_value": 1,
-                "best_day_revenue": "$best_day.revenue",
-                "best_day_date": "$best_day.day"
-            }
-        },
-        {"$sort": {"period_revenue": -1}}
-    ]
-    
-    results = list(coll.aggregate(pipeline))
-    
-    total_revenue = sum(r["period_revenue"] for r in results)
-    total_orders = sum(r["orders_count"] for r in results)
-    
-    return {
-        "start_date": start_date.isoformat(),
-        "end_date": end_date.isoformat(),
-        "menu_id": menu_ids[0] if menu_ids and len(menu_ids) == 1 else None,
-        "total_revenue": round(total_revenue, 2),
-        "total_orders": total_orders,
-        "data": results
-    }
+            },
+            {
+                "$project": {
+                    "menu_id": "$_id",
+                    "period_revenue": 1,
+                    "orders_count": 1,
+                    "avg_order_value": {
+                        "$cond": [
+                            {"$eq": ["$orders_count", 0]},
+                            0,
+                            {"$divide": ["$period_revenue", "$orders_count"]}
+                        ]
+                    },
+                    "best_day": {
+                        "$arrayElemAt": [
+                            {
+                                "$sortArray": {
+                                    "input": "$days",
+                                    "sortBy": {"revenue": -1}
+                                }
+                            },
+                            0
+                        ]
+                    },
+                    "_id": 0
+                }
+            },
+            {
+                "$project": {
+                    "menu_id": 1,
+                    "period_revenue": 1,
+                    "orders_count": 1,
+                    "avg_order_value": 1,
+                    "best_day_revenue": "$best_day.revenue",
+                    "best_day_date": "$best_day.day"
+                }
+            },
+            {"$sort": {"period_revenue": -1}}
+        ]
+        
+        results = list(coll.aggregate(pipeline))
+        
+        total_revenue = sum(r["period_revenue"] for r in results)
+        total_orders = sum(r["orders_count"] for r in results)
+        
+        return {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "menu_id": menu_ids[0] if menu_ids and len(menu_ids) == 1 else None,
+            "total_revenue": round(total_revenue, 2),
+            "total_orders": total_orders,
+            "data": results
+        }
+    except Exception as e:
+        logger.error(f"❌ Erreur MongoDB dans get_revenue_by_menu_stats: {e}", exc_info=True)
+        return {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "menu_id": menu_ids[0] if menu_ids and len(menu_ids) == 1 else None,
+            "total_revenue": 0.0,
+            "total_orders": 0,
+            "data": []
+        }
 
 
 def get_menu_comparison_stats(
@@ -245,55 +259,64 @@ def get_menu_comparison_stats(
     Comparaison complète entre tous les menus pour les graphiques.
     Inclut commandes, CA, notes moyennes.
     """
-    coll = mongo_db["menu_stats_daily"]
-    
-    pipeline = [
-        {
-            "$match": {
-                "day": {
-                    "$gte": start_date.isoformat(),
-                    "$lte": end_date.isoformat()
-                }
-            }
-        },
-        {
-            "$group": {
-                "_id": "$menu_id",
-                "orders_count": {"$sum": "$orders_count"},
-                "revenue": {"$sum": "$revenue_total"},
-                "reviews_count": {"$sum": "$reviews_count"},
-                "ratings": {"$push": "$avg_rating"}
-            }
-        },
-        {
-            "$project": {
-                "menu_id": "$_id",
-                "orders_count": 1,
-                "revenue": 1,
-                "reviews_count": 1,
-                "avg_rating": {
-                    "$avg": {
-                        "$filter": {
-                            "input": "$ratings",
-                            "as": "rating",
-                            "cond": {"$ne": ["$$rating", None]}
-                        }
+    try:
+        coll = mongo_db["menu_stats_daily"]
+        
+        pipeline = [
+            {
+                "$match": {
+                    "day": {
+                        "$gte": start_date.isoformat(),
+                        "$lte": end_date.isoformat()
                     }
-                },
-                "_id": 0
-            }
-        },
-        {"$sort": {"orders_count": -1}}
-    ]
-    
-    results = list(coll.aggregate(pipeline))
-    
-    return {
-        "start_date": start_date.isoformat(),
-        "end_date": end_date.isoformat(),
-        "total_menus": len(results),
-        "menus": results
-    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$menu_id",
+                    "orders_count": {"$sum": "$orders_count"},
+                    "revenue": {"$sum": "$revenue_total"},
+                    "reviews_count": {"$sum": "$reviews_count"},
+                    "ratings": {"$push": "$avg_rating"}
+                }
+            },
+            {
+                "$project": {
+                    "menu_id": "$_id",
+                    "orders_count": 1,
+                    "revenue": 1,
+                    "reviews_count": 1,
+                    "avg_rating": {
+                        "$avg": {
+                            "$filter": {
+                                "input": "$ratings",
+                                "as": "rating",
+                                "cond": {"$ne": ["$$rating", None]}
+                            }
+                        }
+                    },
+                    "_id": 0
+                }
+            },
+            {"$sort": {"orders_count": -1}}
+        ]
+        
+        results = list(coll.aggregate(pipeline))
+        
+        return {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "total_menus": len(results),
+            "menus": results
+        }
+    except Exception as e:
+        logger.error(f"❌ Erreur MongoDB dans get_menu_comparison_stats: {e}", exc_info=True)
+        return {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "total_menus": 0,
+            "menus": []
+        }
 
 
 def get_dashboard_kpi(db: Session) -> Dict:
@@ -306,59 +329,74 @@ def get_dashboard_kpi(db: Session) -> Dict:
     - Avis en attente de modération
     - Messages de contact non traités
     """
-    from datetime import date
+    try:
+        from datetime import date
+        
+        today = date.today()
+        
+        # 1. Commandes aujourd'hui (event_date = aujourd'hui)
+        today_orders = db.execute(
+            select(
+                func.count(Order.id).label("count"),
+                func.coalesce(func.sum(Order.total_price), 0).label("revenue")
+            )
+            .where(Order.event_date == today)
+        ).first()
+        
+        total_orders_today = int(today_orders.count or 0)
+        total_revenue_today = float(today_orders.revenue or 0)
+        
+        # 2. CA total sur toutes les commandes (tous statuts confondus)
+        all_time_revenue = db.execute(
+            select(func.coalesce(func.sum(Order.total_price), 0))
+        ).scalar() or 0
+        total_revenue_all_time = float(all_time_revenue)
+        
+        # 3. Commandes en attente (status PLACED ou ACCEPTED)
+        pending_orders = db.execute(
+            select(func.count(Order.id))
+            .where(Order.status.in_(["PLACED", "ACCEPTED"]))
+        ).scalar() or 0
+        
+        # 4. Employés actifs (role=EMPLOYEE et is_active=True)
+        active_employees = db.execute(
+            select(func.count(User.id))
+            .where(User.role == "EMPLOYEE")
+            .where(User.is_active == True)
+        ).scalar() or 0
+        
+        # 5. Avis en attente de modération (status=PENDING)
+        pending_reviews = db.execute(
+            select(func.count(Review.id))
+            .where(Review.status == "PENDING")
+        ).scalar() or 0
+        
+        # 6. Messages de contact non traités (status=SENT)
+        pending_messages = db.execute(
+            select(func.count(ContactMessage.id))
+            .where(ContactMessage.status == "SENT")
+        ).scalar() or 0
+        
+        return {
+            "total_orders_today": total_orders_today,
+            "total_revenue_today": total_revenue_today,
+            "total_revenue_all_time": total_revenue_all_time,
+            "pending_orders": pending_orders,
+            "active_employees": active_employees,
+            "pending_reviews": pending_reviews,
+            "pending_messages": pending_messages
+        }
     
-    today = date.today()
-    
-    # 1. Commandes aujourd'hui (event_date = aujourd'hui)
-    today_orders = db.execute(
-        select(
-            func.count(Order.id).label("count"),
-            func.coalesce(func.sum(Order.total_price), 0).label("revenue")
-        )
-        .where(Order.event_date == today)
-    ).first()
-    
-    total_orders_today = int(today_orders.count or 0)
-    total_revenue_today = float(today_orders.revenue or 0)
-    
-    # 2. CA total sur toutes les commandes (tous statuts confondus)
-    all_time_revenue = db.execute(
-        select(func.coalesce(func.sum(Order.total_price), 0))
-    ).scalar() or 0
-    total_revenue_all_time = float(all_time_revenue)
-    
-    # 3. Commandes en attente (status PLACED ou ACCEPTED)
-    pending_orders = db.execute(
-        select(func.count(Order.id))
-        .where(Order.status.in_(["PLACED", "ACCEPTED"]))
-    ).scalar() or 0
-    
-    # 3. Employés actifs (role=EMPLOYEE et is_active=True)
-    active_employees = db.execute(
-        select(func.count(User.id))
-        .where(User.role == "EMPLOYEE")
-        .where(User.is_active == True)
-    ).scalar() or 0
-    
-    # 4. Avis en attente de modération (status=PENDING)
-    pending_reviews = db.execute(
-        select(func.count(Review.id))
-        .where(Review.status == "PENDING")
-    ).scalar() or 0
-    
-    # 5. Messages de contact non traités (status=SENT)
-    pending_messages = db.execute(
-        select(func.count(ContactMessage.id))
-        .where(ContactMessage.status == "SENT")
-    ).scalar() or 0
-    
-    return {
-        "total_orders_today": total_orders_today,
-        "total_revenue_today": total_revenue_today,
-        "total_revenue_all_time": total_revenue_all_time,
-        "pending_orders": pending_orders,
-        "active_employees": active_employees,
-        "pending_reviews": pending_reviews,
-        "pending_messages": pending_messages
-    }
+    except Exception as e:
+        # Log détaillé de l'erreur
+        logger.error(f"❌ Erreur dans get_dashboard_kpi: {e}", exc_info=True)
+        # Retourner des valeurs par défaut au lieu de crasher
+        return {
+            "total_orders_today": 0,
+            "total_revenue_today": 0.0,
+            "total_revenue_all_time": 0.0,
+            "pending_orders": 0,
+            "active_employees": 0,
+            "pending_reviews": 0,
+            "pending_messages": 0
+        }
