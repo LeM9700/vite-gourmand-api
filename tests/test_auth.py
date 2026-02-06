@@ -1,21 +1,21 @@
 import pytest
+import bcrypt
 from fastapi import status
 import uuid
 from app.modules.users.models import User
-from passlib.context import CryptContext
+
+def _hash_password(pwd: str) -> str:
+    return bcrypt.hashpw(pwd.encode("utf-8"), bcrypt.gensalt(rounds=12)).decode("utf-8")
 
 def test_login_success(client, db_session):
     """Test successful login"""
-    
-    
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     
     # ✅ Email unique avec UUID
     unique_email = f"testuser_{uuid.uuid4().hex[:8]}@test.com"
     
     user = User(
         email=unique_email,
-        password_hash=pwd_context.hash("TestPass123!"),
+        password_hash=_hash_password("TestPass123!"),
         firstname="Test",
         lastname="User",
         phone="0601020304",
@@ -42,15 +42,12 @@ def test_login_success(client, db_session):
 def test_login_invalid_credentials(client, db_session):
     """Test login with invalid credentials"""
     
-    
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    
     # ✅ Email unique
     unique_email = f"testuser_{uuid.uuid4().hex[:8]}@test.com"
     
     user = User(
         email=unique_email,
-        password_hash=pwd_context.hash("CorrectPass123!"),
+        password_hash=_hash_password("CorrectPass123!"),
         firstname="Test",
         lastname="User",
         phone="0601020304",
@@ -98,14 +95,11 @@ def test_register_success(client):
 def test_register_duplicate_email(client, db_session):
     """Test registration with existing email"""
     
-    
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    
     # Create user in DB
     duplicate_email = f"duplicate_{uuid.uuid4().hex[:8]}@test.com"
     user = User(
         email=duplicate_email,
-        password_hash=pwd_context.hash("Pass123!"),
+        password_hash=_hash_password("Pass123!"),
         firstname="First",
         lastname="User",
         phone="0601020304",

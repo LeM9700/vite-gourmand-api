@@ -311,3 +311,17 @@
 2026-01-27 16:12:11,449 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
 2026-01-27 16:12:12,993 - security - INFO - AUTH_SUCCESS - Email: user@test.com - IP: testclient - UserAgent: testclient
 2026-01-27 16:12:14,099 - security - INFO - AUTH_SUCCESS - Email: employee@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:01,057 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:02,803 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:03,934 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:05,055 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:06,170 - security - INFO - AUTH_SUCCESS - Email: testuser_31149532@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:07,264 - security - INFO - AUTH_FAILED - Email: testuser_b192ea94@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:11,473 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:12,598 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:14,284 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:16,757 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:18,446 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:19,832 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:21,225 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-02-06 15:59:22,328 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient

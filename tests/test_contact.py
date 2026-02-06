@@ -89,7 +89,8 @@ def test_patch_contact_invalid_status(client, auth_headers, db_session):
         headers=auth_headers,
         json={"status": "INVALID"}
     )
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    # Pydantic @field_validator renvoie 422 (Unprocessable Entity) et non 400
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 def test_patch_contact_not_found(client, auth_headers):

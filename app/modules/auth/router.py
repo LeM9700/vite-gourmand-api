@@ -49,7 +49,7 @@ def login(request: Request,
     return {"access_token": token, "token_type": "bearer"}
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def register_user(user_data: UserRegisterIn, db: Session = Depends(get_db)):
+def register_user(user_data: UserRegisterIn, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     # Vérifier si l'email existe déjà
     stmt = select(User).where(User.email == user_data.email)
     existing_user = db.execute(stmt).scalar_one_or_none()
@@ -76,6 +76,15 @@ def register_user(user_data: UserRegisterIn, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    
+     # 📧 Envoyer l'email de confirmation en arrière-plan
+    background_tasks.add_task(
+        email_service.send_confirmation_email,
+        user_id=new_user.id,
+        email=new_user.email,
+        firstname=new_user.firstname
+    )
+    logger.info(f"📧 Email de confirmation programmé pour {new_user.email}")
     
     return new_user
 

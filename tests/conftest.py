@@ -1,4 +1,5 @@
 import pytest
+import bcrypt
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -9,7 +10,6 @@ from app.core.config import Settings
 from app.core.rate_limiter import rate_limiter
 import os
 from app.modules.users.models import User
-from passlib.context import CryptContext
 
 
 # Forcer environnement de test
@@ -98,13 +98,14 @@ def client(db_session):
 def admin_user(db_session):
     """Create admin user for the current test"""
     
-    
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    # Utiliser bcrypt directement (passlib incompatible avec bcrypt>=4.1)
+    pwd_bytes = "TestPass123!".encode("utf-8")
+    hashed = bcrypt.hashpw(pwd_bytes, bcrypt.gensalt(rounds=12)).decode("utf-8")
     
     # ✅ Créer un nouvel admin pour CE test uniquement
     admin = User(
         email="admin@test.com",
-        password_hash=pwd_context.hash("TestPass123!"),
+        password_hash=hashed,
         firstname="Admin",
         lastname="Test",
         phone="0601020304",
@@ -144,11 +145,12 @@ def auth_headers(admin_token):
 @pytest.fixture(scope="function")
 def employee_user(db_session):
     """Create employee user for the current test"""
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    pwd_bytes = "TestPass123!".encode("utf-8")
+    hashed = bcrypt.hashpw(pwd_bytes, bcrypt.gensalt(rounds=12)).decode("utf-8")
     
     employee = User(
         email="employee@test.com",
-        password_hash=pwd_context.hash("TestPass123!"),
+        password_hash=hashed,
         firstname="Employee",
         lastname="Test",
         phone="0601020305",
@@ -182,11 +184,12 @@ def employee_token(client, employee_user):
 @pytest.fixture(scope="function")
 def regular_user(db_session):
     """Create regular user for the current test"""
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    pwd_bytes = "TestPass123!".encode("utf-8")
+    hashed = bcrypt.hashpw(pwd_bytes, bcrypt.gensalt(rounds=12)).decode("utf-8")
     
     user = User(
         email="user@test.com",
-        password_hash=pwd_context.hash("TestPass123!"),
+        password_hash=hashed,
         firstname="Regular",
         lastname="User",
         phone="0601020306",

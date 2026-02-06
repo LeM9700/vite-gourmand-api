@@ -22,15 +22,15 @@ def test_get_employees_unauthorized(client):
 
 def test_toggle_employee_active_status(client, auth_headers, db_session):
     """Test toggling employee active status"""
+    import bcrypt
     from app.modules.users.models import User
-    from passlib.context import CryptContext
     
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    hashed = bcrypt.hashpw(b"EmpPass123!", bcrypt.gensalt(rounds=12)).decode("utf-8")
     
     # Create an employee to toggle
     employee = User(
         email=f"employee_{uuid.uuid4().hex[:8]}@test.com",
-        password_hash=pwd_context.hash("EmpPass123!"),
+        password_hash=hashed,
         firstname="Test",
         lastname="Employee",
         phone="0600000001",
@@ -56,15 +56,15 @@ def test_toggle_employee_active_status(client, auth_headers, db_session):
 
 def test_toggle_employee_reactivate(client, auth_headers, db_session):
     """Test reactivating a deactivated employee"""
+    import bcrypt
     from app.modules.users.models import User
-    from passlib.context import CryptContext
     
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    hashed = bcrypt.hashpw(b"EmpPass123!", bcrypt.gensalt(rounds=12)).decode("utf-8")
     
     # Create an inactive employee
     employee = User(
         email=f"inactive_{uuid.uuid4().hex[:8]}@test.com",
-        password_hash=pwd_context.hash("EmpPass123!"),
+        password_hash=hashed,
         firstname="Inactive",
         lastname="Employee",
         phone="0600000002",
@@ -89,7 +89,6 @@ def test_toggle_employee_reactivate(client, auth_headers, db_session):
 
 def test_toggle_own_account_forbidden(client, admin_user, db_session):
     """Test that admin cannot deactivate their own account"""
-    from passlib.context import CryptContext
     
     # Login as admin
     response = client.post(
