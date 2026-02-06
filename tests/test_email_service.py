@@ -1,5 +1,5 @@
 """
-Tests pour le service d'envoi d'emails avec mocking SMTP
+Tests pour le service d'envoi d'emails avec mocking Mailgun API
 """
 import pytest
 from unittest.mock import Mock, patch, MagicMock
@@ -10,13 +10,21 @@ from app.core.email_service import EmailService, email_service
 from app.core.config import settings
 
 
+def _mock_mailgun_response(status_code=200):
+    """Helper: crée un objet Response mocké pour Mailgun"""
+    resp = MagicMock()
+    resp.status_code = status_code
+    resp.json.return_value = {"id": "<mock-msg-id>", "message": "Queued. Thank you."}
+    resp.text = '{"id":"<mock-msg-id>","message":"Queued. Thank you."}'
+    return resp
+
+
 @pytest.fixture
-def mock_smtp():
-    """Fixture pour mocker le serveur SMTP"""
-    with patch('smtplib.SMTP') as mock:
-        smtp_instance = MagicMock()
-        mock.return_value = smtp_instance
-        yield smtp_instance
+def mock_mailgun():
+    """Fixture pour mocker l'appel requests.post vers Mailgun"""
+    with patch('app.core.email_service.requests.post') as mock_post:
+        mock_post.return_value = _mock_mailgun_response(200)
+        yield mock_post
 
 
 @pytest.fixture
@@ -30,11 +38,10 @@ class TestEmailServiceConfiguration:
     
     def test_email_service_initialization(self, email_svc):
         """Test que le service email s'initialise avec les bons paramètres"""
-        assert email_svc.smtp_server == settings.smtp_server
-        assert email_svc.smtp_port == settings.smtp_port
-        assert email_svc.smtp_username == settings.smtp_username
-        assert email_svc.smtp_password == settings.smtp_password
-        assert email_svc.from_email == settings.smtp_from
+        assert email_svc.api_key == settings.mailgun_api_key
+        assert email_svc.domain == settings.mailgun_domain
+        assert email_svc.from_email is not None
+        assert "mailgun.org" in email_svc.base_url
     
     def test_email_service_global_instance(self):
         """Test que l'instance globale email_service existe"""
@@ -130,9 +137,9 @@ class TestConfirmationToken:
 
 
 class TestSendEmails:
-    """Tests d'envoi d'emails avec mocking SMTP"""
+    """Tests d'envoi d'emails avec mocking Mailgun API"""
     
-    def test_send_confirmation_email_success(self, email_svc, mock_smtp):
+    def test_send_confirmation_email_success(self, email_svc, mock_mailgun):
         """Test envoi réussi d'un email de confirmation"""
         user_id = 123
         email = "test@example.com"
@@ -143,13 +150,12 @@ class TestSendEmails:
         # Vérifier que l'envoi a réussi
         assert result is True
         
-        # Vérifier que SMTP a été appelé
-        mock_smtp.starttls.assert_called_once()
-        mock_smtp.login.assert_called_once_with(settings.smtp_username, settings.smtp_password)
-        mock_smtp.send_message.assert_called_once()
-        mock_smtp.quit.assert_called_once()
+        # Vérifier que Mailgun a été appelé
+        mock_mailgun.assert_called_once()
+        call_kwargs = mock_mailgun.call_args
+        assert call_kwargs[1]["auth"] == ("api", email_svc.api_key)
     
-    def test_send_confirmation_email_contains_token(self, email_svc, mock_smtp):
+    def test_send_confirmation_email_contains_token(self, email_svc, mock_mailgun):
         """Test que l'email de confirmation contient un token"""
         user_id = 123
         email = "test@example.com"
@@ -157,17 +163,16 @@ class TestSendEmails:
         
         email_svc.send_confirmation_email(user_id, email, firstname)
         
-        # Récupérer l'appel à send_message
-        assert mock_smtp.send_message.called
-        sent_message = mock_smtp.send_message.call_args[0][0]
+        # Récupérer l'appel à requests.post
+        assert mock_mailgun.called
+        call_data = mock_mailgun.call_args[1]["data"]
         
-        # Vérifier que le message contient des éléments attendus
-        message_str = str(sent_message)
-        assert "confirmation" in message_str.lower() or "confirm" in message_str.lower()
+        # Vérifier que le HTML contient un lien de confirmation
+        assert "confirm" in call_data["html"].lower() or "confirme" in call_data["html"].lower()
     
-    def test_send_confirmation_email_smtp_failure(self, email_svc, mock_smtp):
-        """Test gestion d'erreur lors d'un échec SMTP"""
-        mock_smtp.send_message.side_effect = Exception("SMTP Error")
+    def test_send_confirmation_email_mailgun_failure(self, email_svc, mock_mailgun):
+        """Test gestion d'erreur lors d'un échec Mailgun"""
+        mock_mailgun.return_value = _mock_mailgun_response(500)
         
         user_id = 123
         email = "test@example.com"
@@ -178,7 +183,7 @@ class TestSendEmails:
         # L'envoi doit échouer gracieusement
         assert result is False
     
-    def test_send_order_confirmation_email(self, email_svc, mock_smtp):
+    def test_send_order_confirmation_email(self, email_svc, mock_mailgun):
         """Test envoi d'un email de confirmation de commande"""
         result = email_svc.send_order_confirmation_email(
             user_email="client@example.com",
@@ -193,14 +198,9 @@ class TestSendEmails:
         )
         
         assert result is True
-        mock_smtp.starttls.assert_called_once()
-        mock_smtp.login.assert_called_once()
-        mock_smtp.send_message.assert_called_once()
-        
-        # Pas besoin de vérifier le contenu base64, juste que l'email a été envoyé
-        assert result is True
+        mock_mailgun.assert_called_once()
     
-    def test_send_order_completed_email(self, email_svc, mock_smtp):
+    def test_send_order_completed_email(self, email_svc, mock_mailgun):
         """Test envoi d'un email de commande complétée"""
         result = email_svc.send_order_completed_email(
             user_email="client@example.com",
@@ -210,14 +210,9 @@ class TestSendEmails:
         )
         
         assert result is True
-        mock_smtp.starttls.assert_called_once()
-        mock_smtp.login.assert_called_once()
-        mock_smtp.send_message.assert_called_once()
-        
-        # Pas besoin de vérifier le contenu base64, juste que l'email a été envoyé
-        assert result is True
+        mock_mailgun.assert_called_once()
     
-    def test_send_employee_welcome_email(self, email_svc, mock_smtp):
+    def test_send_employee_welcome_email(self, email_svc, mock_mailgun):
         """Test envoi d'un email de bienvenue pour employé"""
         result = email_svc.send_employee_welcome_email(
             email="employe@example.com",
@@ -226,11 +221,9 @@ class TestSendEmails:
         )
         
         assert result is True
-        mock_smtp.starttls.assert_called_once()
-        mock_smtp.login.assert_called_once()
-        mock_smtp.send_message.assert_called_once()
+        mock_mailgun.assert_called_once()
     
-    def test_send_equipment_return_reminder(self, email_svc, mock_smtp):
+    def test_send_equipment_return_reminder(self, email_svc, mock_mailgun):
         """Test envoi d'un rappel de retour de matériel"""
         result = email_svc.send_equipment_return_reminder(
             user_email="client@example.com",
@@ -240,15 +233,13 @@ class TestSendEmails:
         )
         
         assert result is True
-        mock_smtp.starttls.assert_called_once()
-        mock_smtp.login.assert_called_once()
-        mock_smtp.send_message.assert_called_once()
+        mock_mailgun.assert_called_once()
 
 
 class TestPasswordResetEmail:
     """Tests pour les emails de réinitialisation de mot de passe"""
     
-    def test_send_password_reset_email(self, email_svc, mock_smtp):
+    def test_send_password_reset_email(self, email_svc, mock_mailgun):
         """Test envoi d'un email de réinitialisation de mot de passe"""
         result = email_svc.send_password_reset_email(
             user_email="user@example.com",
@@ -258,9 +249,7 @@ class TestPasswordResetEmail:
         )
         
         assert result is True
-        mock_smtp.starttls.assert_called_once()
-        mock_smtp.login.assert_called_once()
-        mock_smtp.send_message.assert_called_once()
+        mock_mailgun.assert_called_once()
 
 
 class TestEmailTemplates:
@@ -287,41 +276,42 @@ class TestEmailTemplates:
         assert "<body" in html.lower()
 
 
-class TestSMTPConnection:
-    """Tests pour la gestion de la connexion SMTP"""
+class TestMailgunAPI:
+    """Tests pour l'intégration Mailgun"""
     
-    def test_smtp_connection_with_tls(self, email_svc):
-        """Test que la connexion SMTP utilise TLS si configuré"""
-        with patch('smtplib.SMTP') as mock_smtp:
-            smtp_instance = MagicMock()
-            mock_smtp.return_value = smtp_instance
+    def test_mailgun_timeout_handling(self, email_svc):
+        """Test gestion du timeout Mailgun"""
+        import requests as req
+        with patch('app.core.email_service.requests.post') as mock_post:
+            mock_post.side_effect = req.exceptions.Timeout("Connection timed out")
             
-            # Forcer TLS
-            email_svc.smtp_use_tls = True
+            result = email_svc._send_email(
+                to_email="test@example.com",
+                subject="Test",
+                html_content="<p>Test</p>"
+            )
             
-            conn = email_svc._get_smtp_connection()
-            
-            # Vérifier que starttls a été appelé
-            if conn:
-                smtp_instance.starttls.assert_called()
+            assert result is False
     
-    def test_smtp_connection_failure(self, email_svc):
-        """Test gestion d'erreur lors d'une connexion SMTP échouée"""
-        with patch('smtplib.SMTP') as mock_smtp:
-            mock_smtp.side_effect = Exception("Connection failed")
+    def test_mailgun_network_error(self, email_svc):
+        """Test gestion d'erreur réseau Mailgun"""
+        import requests as req
+        with patch('app.core.email_service.requests.post') as mock_post:
+            mock_post.side_effect = req.exceptions.ConnectionError("Network error")
             
-            # La méthode _get_smtp_connection lève une exception HTTPException
-            from fastapi import HTTPException
-            with pytest.raises(HTTPException) as exc_info:
-                email_svc._get_smtp_connection()
+            result = email_svc._send_email(
+                to_email="test@example.com",
+                subject="Test",
+                html_content="<p>Test</p>"
+            )
             
-            assert exc_info.value.status_code == 500
+            assert result is False
 
 
 class TestEmailValidation:
     """Tests de validation des paramètres d'email"""
     
-    def test_send_email_with_empty_recipient(self, email_svc, mock_smtp):
+    def test_send_email_with_empty_recipient(self, email_svc, mock_mailgun):
         """Test qu'un email avec destinataire vide échoue"""
         result = email_svc._send_email(
             to_email="",
@@ -330,9 +320,10 @@ class TestEmailValidation:
             text_content="Test"
         )
         
-        assert result is False or not mock_smtp.send_message.called
+        assert result is False
+        mock_mailgun.assert_not_called()
     
-    def test_send_email_with_empty_subject(self, email_svc, mock_smtp):
+    def test_send_email_with_empty_subject(self, email_svc, mock_mailgun):
         """Test qu'un email avec sujet vide fonctionne quand même"""
         result = email_svc._send_email(
             to_email="test@example.com",
@@ -342,4 +333,4 @@ class TestEmailValidation:
         )
         
         # Doit fonctionner même avec sujet vide
-        assert result is True or result is False  # Dépend de l'implémentation
+        assert result is True

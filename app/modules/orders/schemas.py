@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 class OrderCreateIn(BaseModel):
     menu_id: int
-    event_address: str = Field(min_length=5)
+    event_address: str = Field(min_length=5, max_length=200)
     event_city: str = Field(min_length=2, max_length=120)
     event_date: date
     event_time: time
@@ -83,7 +83,7 @@ class OrderStatusPatchIn(BaseModel):
     
 class OrderCancelIn(BaseModel):
     contact_mode: str = Field(min_length=3, max_length=20)  # EMAIL/PHONE
-    reason: str = Field(min_length=5)
+    reason: str = Field(min_length=5, max_length=2000)
     
 
 

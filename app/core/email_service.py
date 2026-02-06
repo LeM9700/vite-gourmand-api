@@ -1,8 +1,6 @@
-import smtplib
+import requests
 import secrets
 from datetime import datetime, timedelta, timezone
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import logging
 from jose import jwt, JWTError
 
@@ -13,78 +11,59 @@ logger = logging.getLogger(__name__)
 
 class EmailService:
     def __init__(self):
-        self.smtp_server = settings.smtp_server
-        self.smtp_port = settings.smtp_port
-        self.smtp_username = settings.smtp_username
-        self.smtp_password = settings.smtp_password
-        self.smtp_use_tls = settings.smtp_use_tls
-        self.from_email = settings.smtp_from
+        self.api_key = settings.mailgun_api_key
+        self.domain = settings.mailgun_domain
+        self.from_email = settings.mailgun_from or f"Vite & Gourmand <postmaster@{self.domain}>"
+        self.base_url = f"https://api.mailgun.net/v3/{self.domain}/messages"
         
-        # Log de diagnostic SMTP
-        logger.info(f"🔧 SMTP Config: server={self.smtp_server}, port={self.smtp_port}, user={self.smtp_username[:10] if self.smtp_username else 'N/A'}..., from={self.from_email}")
-
-    def _get_smtp_connection(self):
-        """Créer une connexion SMTP sécurisée"""
-        try:
-            if settings.environment == "development" and not self.smtp_server:
-                logger.warning("SMTP non configuré en développement - simulation d'envoi")
-                return None
-            
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
-            
-            if self.smtp_use_tls:
-                server.starttls()
-            
-            if self.smtp_username and self.smtp_password:
-                server.login(self.smtp_username, self.smtp_password)
-            
-            return server
-        except Exception as e:
-            logger.error(f"Erreur connexion SMTP: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Erreur lors de l'envoi de l'email"
-            )
+        # Log de diagnostic Mailgun
+        logger.info(f"📧 Mailgun Config: domain={self.domain}, from={self.from_email}, api_key={'***' + self.api_key[-6:] if self.api_key else 'N/A'}")
 
     def _send_email(self, to_email: str, subject: str, html_content: str, text_content: str = None):
-        """Envoyer un email avec gestion d'erreurs"""
+        """Envoyer un email via l'API Mailgun"""
         try:
             # Validation de l'email
             if not to_email or '@' not in to_email:
                 raise ValueError("Email invalide")
             
-            # En développement, juste logger
-            if settings.environment == "development" and not settings.smtp_server:
-                logger.info(f"📧 EMAIL SIMULÉ - To: {to_email}, Subject: {subject}")
-                logger.info(f"Content: {text_content or html_content[:100]}...")
+            # En développement sans clé API, simuler l'envoi
+            if not self.api_key:
+                logger.warning(f"📧 EMAIL SIMULÉ (pas de clé Mailgun) - To: {to_email}, Subject: {subject}")
+                logger.info(f"Content preview: {(text_content or html_content)[:120]}...")
                 return True
             
-            server = self._get_smtp_connection()
-            if not server:
+            # Construire les données pour Mailgun
+            data = {
+                "from": self.from_email,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_content,
+            }
+            if text_content:
+                data["text"] = text_content
+            
+            # Appel API Mailgun
+            response = requests.post(
+                self.base_url,
+                auth=("api", self.api_key),
+                data=data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                logger.info(f"✅ Email envoyé via Mailgun à {to_email} — id={result.get('id', 'N/A')}")
+                return True
+            else:
+                logger.error(f"❌ Mailgun erreur {response.status_code}: {response.text}")
                 return False
             
-            # Créer le message
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = self.from_email
-            msg['To'] = to_email
-            
-            # Ajouter le contenu texte
-            if text_content:
-                text_part = MIMEText(text_content, 'plain', 'utf-8')
-                msg.attach(text_part)
-            
-            # Ajouter le contenu HTML
-            html_part = MIMEText(html_content, 'html', 'utf-8')
-            msg.attach(html_part)
-            
-            # Envoyer
-            server.send_message(msg)
-            server.quit()
-            
-            logger.info(f"✅ Email envoyé avec succès à {to_email}")
-            return True
-            
+        except requests.exceptions.Timeout:
+            logger.error(f"❌ Timeout Mailgun pour {to_email}")
+            return False
+        except requests.exceptions.RequestException as e:
+            logger.error(f"❌ Erreur réseau Mailgun pour {to_email}: {e}")
+            return False
         except Exception as e:
             logger.error(f"❌ Erreur envoi email à {to_email}: {e}")
             return False

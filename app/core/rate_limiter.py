@@ -46,3 +46,16 @@ def rate_limit_login(request: Request):
             detail="Trop de tentatives de connexion. Réessayez dans 12 minutes."
         )
     return True
+
+def rate_limit_contact(request: Request):
+    """Limite le formulaire de contact : 3 messages par 10 minutes par IP"""
+    if not rate_limiter.enabled:
+        return True
+    
+    client_ip = request.client.host
+    if not rate_limiter.is_allowed(f"contact:{client_ip}", max_requests=3, window=600):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Trop de messages envoyés. Réessayez dans 10 minutes."
+        )
+    return True
