@@ -38,11 +38,12 @@ class MenuOut(BaseModel):
     regime: str
     min_people: int
     base_price: Decimal
+    conditions_text: str
     stock: int
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    
+
     # Relations pour l'affichage complet
     images: list["MenuImageOut"] = []
     dishes: list["DishOut"] = []

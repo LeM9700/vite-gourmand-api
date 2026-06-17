@@ -360,6 +360,28 @@ def delete_menu_image(
     return None
 
 
+@router.delete("/{menu_id}", status_code=204)
+def delete_menu(
+    menu_id: int,
+    db: Session = Depends(get_db),
+    _user = Depends(require_employee_or_admin),
+):
+    menu = db.execute(select(Menu).where(Menu.id == menu_id)).scalar_one_or_none()
+    if menu is None:
+        raise HTTPException(status_code=404, detail="Menu introuvable")
+
+    db.delete(menu)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Impossible de supprimer ce menu : des commandes y sont associées."
+        )
+    return None
+
+
 @router.patch("/{menu_id}", response_model=MenuOut)
 def update_menu(
     menu_id: int,
