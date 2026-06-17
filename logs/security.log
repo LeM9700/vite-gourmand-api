@@ -325,3 +325,10 @@
 2026-02-06 15:59:19,832 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
 2026-02-06 15:59:21,225 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
 2026-02-06 15:59:22,328 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-06-16 11:56:05,269 - security - INFO - AUTH_SUCCESS - Email: user@test.com - IP: testclient - UserAgent: testclient
+2026-06-16 11:56:17,239 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-06-16 11:56:51,349 - security - INFO - AUTH_SUCCESS - Email: user@test.com - IP: testclient - UserAgent: testclient
+2026-06-16 11:56:53,823 - security - INFO - AUTH_SUCCESS - Email: user@test.com - IP: testclient - UserAgent: testclient
+2026-06-16 11:57:01,012 - security - INFO - AUTH_SUCCESS - Email: admin@test.com - IP: testclient - UserAgent: testclient
+2026-06-16 11:57:26,245 - security - INFO - AUTH_SUCCESS - Email: user@test.com - IP: testclient - UserAgent: testclient
+2026-06-16 11:57:27,101 - security - INFO - AUTH_SUCCESS - Email: other_user@test.com - IP: testclient - UserAgent: testclient

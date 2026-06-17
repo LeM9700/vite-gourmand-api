@@ -488,3 +488,102 @@ def test_employee_cannot_create_order(client: TestClient, test_menu, employee_to
     
     response = client.post("/orders", json=payload, headers={"Authorization": f"Bearer {employee_token}"})
     assert response.status_code == 403  # Seuls les USER peuvent commander
+
+
+@pytest.fixture
+def other_user(db_session):
+    """Crée un second utilisateur (pour les tests de propriété)"""
+    import bcrypt
+    from app.modules.users.models import User
+
+    pwd_bytes = "TestPass123!".encode("utf-8")
+    hashed = bcrypt.hashpw(pwd_bytes, bcrypt.gensalt(rounds=12)).decode("utf-8")
+
+    user = User(
+        email="other_user@test.com",
+        password_hash=hashed,
+        firstname="Other",
+        lastname="User",
+        phone="0601020307",
+        address="1 Rue Autre",
+        role="USER",
+        is_active=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def other_user_token(client, other_user):
+    """Récupère le token JWT du second utilisateur"""
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": other_user.email,
+            "password": "TestPass123!"
+        }
+    )
+    if response.status_code != 200:
+        pytest.fail(f"Login failed: {response.json()}")
+    return response.json()["access_token"]
+
+
+def _create_order(client, test_menu, user_token):
+    payload = {
+        "menu_id": test_menu.id,
+        "event_address": "10 Rue de Test",
+        "event_city": "Paris",
+        "event_date": str(date.today() + timedelta(days=10)),
+        "event_time": "19:00:00",
+        "delivery_km": 5,
+        "people_count": 10,
+        "has_loaned_equipment": False
+    }
+    response = client.post("/orders", json=payload, headers={"Authorization": f"Bearer {user_token}"})
+    assert response.status_code == 201
+    return response.json()["id"]
+
+
+def test_user_can_cancel_own_placed_order(client: TestClient, test_menu, user_token):
+    """Un utilisateur peut annuler sa propre commande tant qu'elle est PLACED"""
+    order_id = _create_order(client, test_menu, user_token)
+
+    response = client.post(
+        f"/orders/{order_id}/cancel-by-user",
+        headers={"Authorization": f"Bearer {user_token}"}
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "CANCELLED"
+
+
+def test_user_cannot_cancel_non_placed_order(client: TestClient, test_menu, user_token, admin_token):
+    """Un utilisateur ne peut pas annuler une commande qui n'est plus PLACED"""
+    order_id = _create_order(client, test_menu, user_token)
+
+    # Passer la commande à ACCEPTED via l'admin
+    response = client.patch(
+        f"/orders/{order_id}/status",
+        json={"status": "ACCEPTED"},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == 200
+
+    response = client.post(
+        f"/orders/{order_id}/cancel-by-user",
+        headers={"Authorization": f"Bearer {user_token}"}
+    )
+    assert response.status_code == 400
+    assert "PLACED" in response.text
+
+
+def test_user_cannot_cancel_other_users_order(client: TestClient, test_menu, user_token, other_user_token):
+    """Un utilisateur ne peut pas annuler la commande d'un autre utilisateur"""
+    order_id = _create_order(client, test_menu, user_token)
+
+    response = client.post(
+        f"/orders/{order_id}/cancel-by-user",
+        headers={"Authorization": f"Bearer {other_user_token}"}
+    )
+    assert response.status_code == 403

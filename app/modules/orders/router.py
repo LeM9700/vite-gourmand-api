@@ -9,7 +9,7 @@ from app.modules.orders.schemas import (
     OrderStatusPatchIn, OrderCancelIn, OrderUpdateIn, OrderWithDetailsOut,
     UserInfoOut, MenuInfoOut
 )
-from app.modules.orders.service import create_order, list_my_orders, get_order_detail_for_user, list_orders_admin, patch_order_status, cancel_order, update_order
+from app.modules.orders.service import create_order, list_my_orders, get_order_detail_for_user, list_orders_admin, patch_order_status, cancel_order, cancel_order_by_user, update_order
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -112,6 +112,16 @@ def update_order_status(
         note=payload.note,
         background_tasks=background_tasks
     )
+    return order
+
+
+@router.post("/{order_id}/cancel-by-user", response_model=OrderOut)
+def cancel_order_by_user_endpoint(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_user),
+):
+    order = cancel_order_by_user(db=db, order_id=order_id, user_id=current_user.id)
     return order
 
 

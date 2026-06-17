@@ -334,6 +334,43 @@ def patch_order_status(
     return order
 
 
+def cancel_order_by_user(db: Session, order_id: int, user_id: int) -> Order:
+    """Annulation libre par le client : uniquement si la commande est encore PLACED."""
+    order = db.execute(select(Order).where(Order.id == order_id)).scalar_one_or_none()
+    if order is None:
+        raise HTTPException(status_code=404, detail="Commande introuvable")
+
+    if order.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Accès interdit")
+
+    if order.status != "PLACED":
+        raise HTTPException(
+            status_code=400,
+            detail="Annulation autorisée uniquement si la commande est au statut PLACED"
+        )
+
+    # Recrédit du stock
+    menu = db.execute(select(Menu).where(Menu.id == order.menu_id)).scalar_one_or_none()
+    if menu is not None:
+        menu.stock += 1
+        db.add(menu)
+
+    order.status = "CANCELLED"
+    db.add(order)
+
+    hist = OrderStatusHistory(
+        order_id=order.id,
+        status="CANCELLED",
+        changed_by_user_id=user_id,
+        note="Annulation par le client"
+    )
+    db.add(hist)
+
+    db.commit()
+    db.refresh(order)
+    return order
+
+
 NON_REFUNDABLE_STATUSES = {"DELIVERING", "DELIVERED", "WAITING_RETURN", "COMPLETED"}
 
 def cancel_order(
